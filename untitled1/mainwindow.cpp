@@ -226,6 +226,55 @@ void MainWindow::clearClicked() //直接清空
     ui->edit_show->clear();
 }
 
+bool isNum(char ch) {
+    if(ch >= '0' && ch <= '9') return true;
+    else return false;
+}
+
+bool isOperate(char ch) {
+    if(ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '(' || ch == ')')
+    return true;
+    else return false;
+}
+
+int level(char ch) {
+    switch(ch) {
+        case '(' :
+            return 5;
+        case '*' :
+            return 4;
+        case '/' :
+            return 4;
+        case '+' :
+            return 3;
+        case '-' :
+            return 3;
+        case ')':
+            return 2;
+    }
+}
+/*字符串转数字*/
+double scd(string s) {
+    if(s.length() == 0) return INT_MAX;
+
+    bool flag = false;
+    for(int i = 0; i < s.length(); i++) {
+        if(i == 0 && s[i] == '-') continue;
+        else if(s[i] == '.' && !flag) {
+            if(i > 0 && isNum(s[i-1])) {
+                flag = true;
+                continue;
+            }
+            else return INT_MAX;
+        }
+        else if(isNum(s[i])) continue;
+        else return INT_MAX;
+    }
+
+    double result = atof(s.c_str());
+    return result;
+}
+
 void MainWindow::equalClicked(){
 
 }
