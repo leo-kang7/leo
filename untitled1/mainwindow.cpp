@@ -274,7 +274,124 @@ double scd(string s) {
     double result = atof(s.c_str());
     return result;
 }
+/*由中缀表达式得到后缀表达式, 向量V存储结果*/
+vector<string> midToPost(string s) {
+    stack<char> S; /*符号栈*/
+    vector<string> V; /*后缀表达式*/
+    int i = 0;
+    while(i < s.length()) {
+        if(isNum(s[i])) {
+            string str = "";
+            while(isNum(s[i]) || s[i] == '.') {
+                str += s[i];
+                i++;
+            }
+            V.push_back(str);
+        }
+
+        else if(isOperate(s[i])){
+            /*负数情况*/
+            if(s[i] == '-' && (i == 0 || !isNum(s[i-1]))) {
+                string str = "-"; i++;
+                while(isNum(s[i]) || s[i] == '.') {
+                    str += s[i]; i++;
+                }
+                V.push_back(str);
+            }else{
+                if(S.empty()){
+                    S.push(s[i]); i++;
+                }else {
+                    int initial = level(s[i]);
+                    if(initial == 2) {
+                        while(level(S.top()) != 5 && !s.empty()) {
+                            string str = "";
+                            str += S.top();
+                            V.push_back(str);
+                            S.pop();
+                        }
+                        if(S.top() == '(') S.pop(); i++;
+                    } else {
+                        while(!S.empty() && initial <= level(S.top()) && level(S.top()) != 5) {
+                            string str = "";
+                            str += S.top();
+                            V.push_back(str);
+                            S.pop();
+                        }
+                        S.push(s[i]); i++;
+                    }
+                }
+            }
+        }
+        else{
+            cout << "表达式出错" << endl;
+            V.clear();
+            return V;
+        }
+    }
+    while(!S.empty()) {
+        string str = ""; str += S.top();
+        S.pop();
+        V.push_back(str);
+    }
+    //for(int i = 0; i < V.size(); i++) cout << V[i] << "[]";
+    return V;
+}
+
+/*后缀表达式得到最终结果*/
+double getValue(vector<string> V) {
+    stack<double> S;
+    for(int i = 0; i < V.size(); i++) {
+    /*操作运算符*/
+        if(V[i].length() == 1 && isOperate(V[i][0])) {
+            double a = 0, b = 0;
+            if(!S.empty()) {
+                a = S.top(); S.pop();
+            }else return INT_MAX;
+
+            if(!S.empty()) {
+                b = S.top(); S.pop();
+            }else return INT_MAX;
+
+            switch(V[i][0]) {
+                case '+':
+                    S.push(b+a);
+                    break;
+                case '-':
+                    S.push(b-a);
+                    break;
+                case '*':
+                    S.push(b*a);
+                    break;
+                case '/':
+                    S.push(b/a);
+                    break;
+                default:
+                    return INT_MAX;
+            }
+        }else {
+            if(scd(V[i]) == INT_MAX) return INT_MAX;
+            else S.push(scd(V[i]));
+        }
+    }
+    if(S.empty()) return INT_MAX;
+
+    double value = S.top();
+    S.pop();
+    return value;
+}
 
 void MainWindow::equalClicked(){
+    QString input3=ui->edit_show->toPlainText();
+        string inputTemp =input3.toStdString();
+        vector<string> expression = midToPost(inputTemp);
+        double value = getValue(expression);
+        input3=' ';
+        if(value != INT_MAX) {
+          input3=input3+"="+QString::number(value);
+        ui->edit_show->insertPlainText(input3);
+        }else{
+          input3=input3+"=syntax error";
+         ui->edit_show->insertPlainText(input3);
+        }
 
 }
